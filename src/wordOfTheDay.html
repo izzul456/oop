@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Word Saver</title>
+    <style>
+      body {
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
+}
+
+h2 {
+    margin: 10px;
+    color: #333;
+}
+
+.sidenav {
+    background-color: #333;
+    padding: 20px;
+    color: white;
+    min-width: 200px;
+}
+
+.sidenav ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.sidenav a {
+    text-decoration: none;
+    color: white;
+    font-size: 18px;
+    display: block;
+    margin-bottom: 15px;
+}
+
+.mainWrapper {
+    margin: 20px;
+    padding: 20px;
+    background-color: white;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+    color: #333;
+}
+
+form {
+    margin-bottom: 20px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+    color: #333;
+}
+
+input {
+    width: 100%;
+    padding: 8px;
+    box-sizing: border-box;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+button {
+    background-color: #333;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #555;
+}
+    </style>
+
+
+  </head>
+  <body>
+    <div class="sidenav">
+      <h2>Navigation</h2>
+      <ul>
+          
+        <li><a href="displayWord.html"> Word of the day</a></li>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="wordOfTheDay.html">add Word of the Day</a></li>
+      </ul>
+  </div>
+      
+    <div class="mainWrapper">
+      <h1>Add Word of the day</h1>
+
+      <form>
+        <div class="form-group">
+          <label>Word</label>
+          <input id="wordInput" type="text" class="form-control">
+        </div>
+      </form>
+      <button id="btnSave">Save</button>
+      
+    </div>
+
+    <script src="saveword.js"></script>
+  </body>
+</html>

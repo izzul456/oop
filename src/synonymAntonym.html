@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Synonyms and Antonyms</title>
+  <link rel="stylesheet" href="synonymantonym.css" />
+</head>
+<body>
+    <nav>
+        <ul>
+          <li><a href="index.html">Home</a></li>
+          <li><a href="searchWord.html">Search for a Word</a></li>
+          <li><a href="addWordOfTheDay.html">Add Word of the Day</a></li>
+          <li><a href="displayWords.html">words of the day</a></li>
+          <li><a href="displaymeaning.html">Synonyms and Antonyms</a></li>
+          <li><a href="synonymsAntonyms.html">Synonyms and Antonyms</a></li>
+        </ul>
+      </nav>
+  <div class="mainWrapper">
+    <h1>Synonyms and Antonyms</h1>
+
+    <!-- Display Synonyms and Antonyms Section -->
+    <section id="synonymAntonymSection">
+      <h2>Synonyms and Antonyms</h2>
+      <div id="synonyms">Synonyms: Loading...</div>
+      <div id="antonyms">Antonyms: Loading...</div>
+    </section>
+  </div>
+
+  <script src="synonymantonym.js"></script>
+</body>
+</html>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+  // Function to fetch synonyms and antonyms and display them
+  async function fetchSynonymsAndAntonyms() {
+    const apiUrl = 'https://api.dictionaryapi.dev/api/v2/entries/en/{$word}'; // Replace with your API endpoint
+    try {
+      const response = await fetch(apiUrl);
+      const data = await response.json();
+
+      if (Array.isArray(data) && data.length > 0) {
+        const wordData = data[0];
+        const synonyms = wordData.meanings
+          .filter((meaning) => meaning.synonyms && meaning.synonyms.length > 0)
+          .map((meaning) => meaning.synonyms.join(', '));
+
+        const antonyms = wordData.meanings
+          .filter((meaning) => meaning.antonyms && meaning.antonyms.length > 0)
+          .map((meaning) => meaning.antonyms.join(', '));
+
+        // Display synonyms and antonyms
+        document.getElementById('synonyms').textContent = 'Synonyms: ' + (synonyms.length > 0 ? synonyms.join(', ') : 'None');
+        document.getElementById('antonyms').textContent = 'Antonyms: ' + (antonyms.length > 0 ? antonyms.join(', ') : 'None');
+      } else {
+        document.getElementById('synonyms').textContent = 'Synonyms: Not found';
+        document.getElementById('antonyms').textContent = 'Antonyms: Not found';
+      }
+    } catch (error) {
+      console.error('Error fetching synonyms and antonyms:', error);
+      document.getElementById('synonyms').textContent = 'Synonyms: Error';
+      document.getElementById('antonyms').textContent = 'Antonyms: Error';
+    }
+  }
+
+  // Call the function to fetch and display synonyms and antonyms
+  fetchSynonymsAndAntonyms();
+});
+
+</script>

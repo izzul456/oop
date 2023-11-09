@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Results</title>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Search Results</title>
+        <style>
+            body {
+                font-family: 'Arial', sans-serif;
+                margin: 0;
+                padding: 0;
+                background-color: #f4f4f4;
+            }
+    
+            .sidenav {
+                height: 100%;
+                width: 250px;
+                position: fixed;
+                z-index: 1;
+                top: 0;
+                left: 0;
+                background-color: #333;
+                padding-top: 20px;
+                padding-left: 10px;
+                color: white;
+            }
+    
+            .sidenav h2 {
+                margin-bottom: 20px;
+            }
+    
+            .sidenav ul {
+                list-style-type: none;
+                padding: 0;
+            }
+    
+            .sidenav a {
+                text-decoration: none;
+                color: white;
+                font-size: 18px;
+                display: block;
+                margin-bottom: 15px;
+            }
+    
+            h1 {
+                margin-left: 280px;
+                color: #333;
+            }
+    
+            #results {
+                margin: 80px 20px 20px 280px;
+                padding: 20px;
+                background-color: white;
+                border-radius: 5px;
+                box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            }
+    
+            h2, h3, p {
+                color: #333;
+            }
+    
+            button {
+                margin-top: 20px;
+                margin-left: 280px;
+                padding: 10px 20px;
+                font-size: 16px;
+                cursor: pointer;
+                background-color: #333;
+                color: white;
+                border: none;
+                border-radius: 5px;
+            }
+    
+            button:hover {
+                background-color: #555;
+            }
+    
+            #synonymsAntonymsContainer {
+                margin-top: 20px;
+                padding: 10px;
+                border: 1px solid #ddd;
+                border-radius: 5px;
+                background-color: grey;
+                margin-left: 280px;
+            }
+    
+            #synonymsAntonymsContainer h3 {
+                color: #333;
+                margin-top: 10px;
+                margin-bottom: 5px;
+            }
+    
+            #synonymsAntonymsContainer p {
+                margin-bottom: 5px;
+                margin-left: 15px;
+                color: #333;
+                white-space: pre-wrap;
+            }
+        </style>
+</style>
+</head>
+
+<body>
+    <div class="sidenav">
+        <h2>Navigation</h2>
+        <ul>
+            <li><a href="displayWord.html"> Word Of The Day</a></li>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="wordOfTheDay.html">Add Word of the Day</a></li>
+        </ul>
+    </div>
+    <h1>Search Results</h1>
+
+    <div id="results">
+        <!-- JavaScript will populate this section -->
+    </div>
+
+    <button id="synonymsAntonymsButton">Show Synonyms & Antonyms</button>
+    <div id="synonymsAntonymsContainer"></div>
+
+    <script>
+        // Define the createElementWithText function
+        function createElementWithText(elementType, textContent) {
+            var element = document.createElement(elementType);
+            element.textContent = textContent;
+            return element;
+        }
+
+        // Define the createAudioElement function
+        function createAudioElement(audioUrl) {
+            var audio = document.createElement('audio');
+            audio.setAttribute('controls', true);
+            var source = document.createElement('source');
+            source.setAttribute('src', audioUrl);
+            audio.appendChild(source);
+            return audio;
+        }
+
+        // Get URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const searchWord = urlParams.get("word");
+        const searchResults = JSON.parse(urlParams.get("results"));
+
+        // Access and display the search results
+        const resultsContainer = document.getElementById("results");
+        let displayedAudio = false; // Track if audio has been displayed
+        const groupedMeanings = {};
+
+        // Group meanings by part of speech
+        searchResults.forEach((result) => {
+            result.meanings.forEach((meaning) => {
+                const partOfSpeech = meaning.partOfSpeech;
+                if (!groupedMeanings[partOfSpeech]) {
+                    groupedMeanings[partOfSpeech] = [];
+                }
+                groupedMeanings[partOfSpeech].push(meaning);
+            });
+        });
+
+        // Display the phonetic information
+        if (searchResults[0].phonetics && searchResults[0].phonetics.length > 0 && searchResults[0].phonetics[0].text) {
+            resultsContainer.appendChild(createElementWithText('p', `Phonetic: ${searchResults[0].phonetics[0].text}`));
+            if (searchResults[0].phonetics[0].audio) {
+                resultsContainer.appendChild(createAudioElement(searchResults[0].phonetics[0].audio));
+            }
+        }
+
+        // Iterate through the grouped meanings
+        for (const partOfSpeech in groupedMeanings) {
+            resultsContainer.appendChild(createElementWithText('h2', `Part of Speech: ${partOfSpeech}`));
+
+            // Display only the first meaning for clarity
+            const firstMeaning = groupedMeanings[partOfSpeech][0];
+
+            resultsContainer.appendChild(createElementWithText('h3', 'Meaning:'));
+
+            // Display definitions
+            if (firstMeaning.definitions && firstMeaning.definitions.length > 0) {
+                const definitionsList = document.createElement('ul');
+                firstMeaning.definitions.forEach((definition) => {
+                    const listItem = document.createElement('li');
+                    listItem.appendChild(createElementWithText('p', `Definition: ${definition.definition}`));
+
+                    // Display example, if available
+                    if (definition.example) {
+                        listItem.appendChild(createElementWithText('p', `Example: ${definition.example}`));
+                    }
+
+                    // Display source URL, if available
+                    if (definition.sourceUrl) {
+                        listItem.appendChild(createElementWithText('p', `Source URL: ${definition.sourceUrl}`));
+                    }
+
+                    definitionsList.appendChild(listItem);
+                });
+
+                resultsContainer.appendChild(definitionsList);
+            }
+        }
+
+        const synonymsAntonymsButton = document.getElementById("synonymsAntonymsButton");
+        const synonymsAntonymsContainer = document.getElementById("synonymsAntonymsContainer");
+        let synonymsAntonymsVisible = false;
+
+        synonymsAntonymsButton.addEventListener("click", function () {
+            synonymsAntonymsVisible = !synonymsAntonymsVisible;
+            displaySynonymsAndAntonyms();
+        });
+        
+
+        function displaySynonymsAndAntonyms() {
+            synonymsAntonymsContainer.innerHTML = '';
+
+            if (synonymsAntonymsVisible) {
+                searchResults.forEach((result) => {
+                    result.meanings.forEach((meaning) => {
+                        if (meaning.synonyms && meaning.synonyms.length > 0) {
+                            const synonymsHeader = createElementWithText('h3', 'Synonyms:');
+                            const synonymsList = createElementWithText('p', `Synonyms: ${meaning.synonyms.slice(0, 3).join(', ')}`);
+                            synonymsAntonymsContainer.appendChild(synonymsHeader);
+                            synonymsAntonymsContainer.appendChild(synonymsList);
+                        }
+
+                        if (meaning.antonyms && meaning.antonyms.length > 0) {
+                            const antonymsHeader = createElementWithText('h3', 'Antonyms:');
+                            const antonymsList = createElementWithText('p', `Antonyms: ${meaning.antonyms.slice(0, 3).join(', ')}`);
+                            synonymsAntonymsContainer.appendChild(antonymsHeader);
+                            synonymsAntonymsContainer.appendChild(antonymsList);
+                        }
+                    });
+                });
+            }
+        }
+    </script>
+</body>
+
+</html>

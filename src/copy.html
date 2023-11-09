@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="stylesheet" type="text/css" href="styles.css">
+  <style>
+    /* Add your CSS styles here */
+  </style>
+</head>
+<body>
+  
+  <!-- Section for displaying words from the text file -->
+  <section id="wordListSection">
+    <h2>Words from Text File</h2>
+    <div id="wordList"></div>
+  </section>
+ <!-- Section for updating a word -->
+<section id="updateWordSection">
+  <h2>Update Word</h2>
+  <input type="text" id="newWord" placeholder="Enter the new word" />
+  <button id="updateButton">Update Word</button>
+</section>
+
+
+  <!-- Section for searching a word -->
+  <section id="searchSection">
+    <h2>Search for a Word</h2>
+    <input type="text" id="searchWord" placeholder="Enter a word" />
+    <button id="searchButton">Search</button>
+  </section>
+
+  <!-- Section for displaying the first meaning of the search word -->
+  <section id="searchFirstMeaningSection" style="display: none;">
+    <h2>First Meaning</h2>
+    <div id="searchFirstMeaning"></div>
+  </section>
+
+  <!-- Section for displaying the other meanings of the search word -->
+  <section id="searchOtherMeaningsSection" style="display: none;">
+    <h2>Other Meanings</h2>
+    <div id="searchOtherMeanings"></div>
+  </section>
+
+  <!-- Section for displaying audio pronunciations and sources -->
+  <section id="audioAndSourcesSection" style="display: none;">
+    <h2>Audio Pronunciations and Sources</h2>
+    <div id="audioAndSources"></div>
+  </section>
+
+  <script>
+    // Function to fetch and display the first meaning of a word
+    async function fetchAndDisplayFirstMeaning(word) {
+      const apiUrl = `https://api.dictionaryapi.dev/api/v2/entries/en/${word}`;
+      try {
+        const response = await fetch(apiUrl);
+        const data = await response.json();
+        if (Array.isArray(data) && data.length > 0) {
+          const firstMeaning = data[0].meanings[0].definitions[0].definition;
+          return firstMeaning;
+        } else {
+          return `${word}: Word not found`;
+        }
+      } catch (error) {
+        console.error("Failed to fetch meaning for", word, ":", error);
+        return `${word}: Error fetching word meaning`;
+      }
+    }
+
+    // Function to fetch and display all meanings of a word
+    async function fetchAndDisplayAllMeanings(word) {
+      const apiUrl = `https://api.dictionaryapi.dev/api/v2/entries/en/${word}`;
+      try {
+        const response = await fetch(apiUrl);
+        const data = await response.json();
+        if (Array.isArray(data) && data.length > 0) {
+          const wordData = data[0];
+          const allMeanings = wordData.meanings.flatMap(meaning => {
+            const partOfSpeech = meaning.partOfSpeech;
+            const definitions = meaning.definitions.map(definition => definition.definition);
+            return { partOfSpeech, definitions };
+          });
+          return allMeanings;
+        } else {
+          return [{ partOfSpeech: `${word}: Word not found`, definitions: [] }];
+        }
+      } catch (error) {
+        console.error("Failed to fetch meaning for", word, ":", error);
+        return [{ partOfSpeech: `${word}: Error fetching word meaning`, definitions: [] }];
+      }
+    }
+
+    // Function to add audio pronunciations
+    function addAudioPronunciations(searchWord) {
+      const apiUrl = `https://api.dictionaryapi.dev/api/v2/entries/en/${searchWord}`;
+      fetch(apiUrl)
+        .then(response => response.json())
+        .then(data => {
+          const audioAndSourcesSection = document.getElementById("audioAndSources");
+          if (Array.isArray(data) && data.length > 0 && data[0].phonetics && data[0].phonetics.length > 0) {
+            data[0].phonetics.forEach(phonetic => {
+              if (phonetic.audio) {
+                const audioElement = document.createElement("audio");
+                audioElement.controls = true;
+                const sourceElement = document.createElement("source");
+                sourceElement.src = phonetic.audio;
+                audioElement.appendChild(sourceElement);
+                audioAndSourcesSection.appendChild(audioElement);
+              }
+            });
+          }
+        })
+        .catch(error => {
+          console.error("Error fetching audio pronunciations:", error);
+        });
+    }
+
+    // Function to add source URLs
+    function addSourceUrls(searchWord) {
+      const apiUrl = `https://api.dictionaryapi.dev/api/v2/entries/en/${searchWord}`;
+      fetch(apiUrl)
+        .then(response => response.json())
+        .then(data => {
+          const audioAndSourcesSection = document.getElementById("audioAndSources");
+          if (Array.isArray(data) && data.length > 0 && data[0].sourceUrls && data[0].sourceUrls.length > 0) {
+            const sourceUrlsElement = document.createElement("div");
+            sourceUrlsElement.classList.add("source-urls");
+            sourceUrlsElement.appendChild(document.createElement("p")).textContent = "Source URLs:";
+            data[0].sourceUrls.forEach(sourceUrl => {
+              const sourceElement = document.createElement("p");
+              const sourceLink = document.createElement("a");
+              sourceLink.href = sourceUrl;
+              sourceLink.textContent = sourceUrl;
+              sourceLink.target = "_blank";
+              sourceElement.appendChild(sourceLink);
+              sourceUrlsElement.appendChild(sourceElement);
+            });
+            audioAndSourcesSection.appendChild(sourceUrlsElement);
+          }
+        })
+        .catch(error => {
+          console.error("Error fetching source URLs:", error);
+        });
+    }
+
+    // Add an event listener to the "Search" button
+    document.getElementById("searchButton").addEventListener("click", async function () {
+      const searchWord = document.getElementById("searchWord").value;
+
+      if (searchWord) {
+        // Display the search sections
+        document.getElementById("searchFirstMeaningSection").style.display = "block";
+        document.getElementById("searchOtherMeaningsSection").style.display = "block";
+        document.getElementById("audioAndSourcesSection").style.display = "block";
+
+        // Display the first meaning in "First Meaning" section
+        const firstMeaning = await fetchAndDisplayFirstMeaning(searchWord);
+        document.getElementById("searchFirstMeaning").innerHTML = `<p><strong>${searchWord}</strong><br>${firstMeaning}</p>`;
+
+        // Display the other meanings in "Other Meanings" section
+        const allMeanings = await fetchAndDisplayAllMeanings(searchWord);
+        document.getElementById("searchOtherMeanings").innerHTML = allMeanings.map(meaning => `
+          <p><strong>${meaning.partOfSpeech}:</strong> ${meaning.definitions.join(', ')}</p>
+        `).join('');
+
+        // Display audio pronunciations and source URLs in "Audio Pronunciations and Sources" section
+        addAudioPronunciations(searchWord); // Call the function to add audio pronunciations
+        addSourceUrls(searchWord); // Call the function to add source URLs
+      } else {
+        document.getElementById("searchFirstMeaning").innerText = "Please enter a word to search.";
+      }
+    });
+
+    // Function to fetch and display words from the text file
+    async function fetchAndDisplayWordsFromTextFile() {
+      try {
+        const response = await fetch('words/userWords.txt');
+        const data = await response.text();
+        const lines = data.split('\n').filter(line => line.trim() !== '');
+
+        // Display the words from the text file and add a button for each word
+        for (const word of lines) {
+          const firstMeaning = await fetchAndDisplayFirstMeaning(word.trim());
+          const wordHtml = `<p>${word.trim()}</p><p><strong>First Meaning:</strong><br>${firstMeaning}</p>`;
+          const updateButton = `<button class="updateWordButton" data-word="${word.trim()}" data-meaning="${firstMeaning}">Update Word</button>`;
+          document.getElementById("wordList").innerHTML += wordHtml + updateButton;
+        }
+      } catch (error) {
+        console.error("Error reading the text file:", error);
+      }
+    }
+
+    // Load and display words from the text file when the app is launched
+    fetchAndDisplayWordsFromTextFile();
+    
+    // Add click event listeners to the "Update Word" buttons
+    document.querySelectorAll(".updateWordButton").forEach(button => {
+      button.addEventListener("click", (event) => {
+        const word = event.currentTarget.dataset.word;
+        const meaning = event.currentTarget.dataset.meaning;
+        
+        // Set the selected word and its meaning for update
+        document.getElementById("searchWord").value = word;
+        document.getElementById("searchFirstMeaning").innerHTML = `<p><strong>${word}</strong><br>${meaning}</p>`;
+      });
+    });
+  </script>
+  <script>
+    const fs = require('fs');
+
+    // Add an event listener to the "Update Word" button
+document.getElementById("updateButton").addEventListener("click", () => {
+  const filePath = 'src/words/userWords.txt';
+  const newWord = document.getElementById("newWord").value;
+  const oldWord = document.getElementById("searchWord").value;
+
+  if (oldWord) {
+    // Update the word in the text file
+    updateWordInTextFile(filePath, oldWord, newWord);
+
+    // Reload the words from the text file
+    document.getElementById("wordList").innerHTML = "";
+    fetchAndDisplayWordsFromTextFile();
+  } else {
+    console.error("Please select a word to update.");
+  }
+});
+
+  </script>
+</body>
+</html>

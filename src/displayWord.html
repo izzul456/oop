@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body {
+        font-family: 'Arial', sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f4f4f4;
+    }
+
+    h2 {
+        margin: 10px;
+        color: #333;
+    }
+
+    .sidenav {
+        background-color: #333;
+        padding: 20px;
+        color: white;
+    }
+
+    .sidenav ul {
+        list-style-type: none;
+        padding: 0;
+    }
+
+    .sidenav a {
+        text-decoration: none;
+        color: white;
+        font-size: 18px;
+        display: block;
+        margin-bottom: 15px;
+    }
+
+    #wordListSection {
+        margin: 20px;
+        padding: 20px;
+        background-color: grey;
+        border-radius: 5px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    #wordList p {
+        margin-bottom: 20px;
+        border-bottom: 1px solid #ddd;
+        padding-bottom: 10px;
+    }
+
+    .deleteWordButton {
+        background-color: #333;
+        color: white;
+        border: none;
+        padding: 5px 10px;
+        margin-left: 10px;
+        cursor: pointer;
+        border-radius: 3px;
+    }
+
+    .deleteWordButton:hover {
+        background-color: #555;
+    }
+</style>
+</head>
+<body>
+  <h2>Navigation</h2>
+  <div class="sidenav">
+    <ul>
+        
+        <li><a href="displayWord.html"> Word of the day</a></li>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="wordOfTheDay.html">add Word of the Day</a></li>
+    </ul>
+
+  <!-- Section for displaying words from the text file -->
+  <section id="wordListSection">
+    <h2>Words from The Day</h2>
+    <div id="wordList"></div>
+  </section>
+
+  <script>
+    const fs = require('fs');
+
+    // Function to delete a word from a text file
+    function deleteWordFromFile(wordToDelete) {
+      const filePath = 'src/words/userWords.txt';
+
+      fs.readFile(filePath, 'utf8', (err, data) => {
+        if (err) {
+          console.error("Error reading file:", err);
+          alert("Error deleting word.");
+          return;
+        }
+
+        // Split the data into an array of lines
+        const lines = data.split('\n');
+
+        // Check if the word to delete exists in the file
+        const index = lines.indexOf(wordToDelete);
+        if (index !== -1) {
+          // Remove the word from the array
+          lines.splice(index, 1);
+
+          // Join the lines back into text
+          const updatedText = lines.join('\n');
+
+          // Write the updated text back to the file
+          fs.writeFile(filePath, updatedText, (err) => {
+            if (err) {
+              console.error("Error saving file:", err);
+              alert("Error deleting word.");
+            } else {
+              alert("Word deleted!");
+              // Remove the deleted word from the displayed list
+              const deleteButton = document.querySelector(
+                `.deleteWordButton[data-word="${wordToDelete}"]`
+              );
+              if (deleteButton) {
+                deleteButton.parentElement.remove();
+              }
+            }
+          });
+        } else {
+          alert("Word not found in the list.");
+        }
+      });
+    }
+
+    // Function to fetch and display the first meaning of a word
+    async function fetchAndDisplayFirstMeaning(word) {
+      const apiUrl = `https://api.dictionaryapi.dev/api/v2/entries/en/${word}`;
+      try {
+        const response = await fetch(apiUrl);
+        const data = await response.json();
+        if (Array.isArray(data) && data.length > 0) {
+          const firstMeaning = data[0].meanings[0].definitions[0].definition;
+          return firstMeaning;
+        } else {
+          return `${word}: Word not found`;
+        }
+      } catch (error) {
+        console.error("Failed to fetch meaning for", word, ":", error);
+        return `${word}: Error fetching word meaning`;
+      }
+    }
+
+    // Wrap your JavaScript code in a DOMContentLoaded event listener
+    document.addEventListener("DOMContentLoaded", function() {
+      // Function to fetch and display words from the text file
+      async function fetchAndDisplayWordsFromTextFile() {
+        try {
+          const response = await fetch('words/userWords.txt');
+          const data = await response.text();
+          const lines = data.split('\n').filter(line => line.trim() !== '');
+
+          // Display the words from the text file and add a delete button for each word
+          for (const word of lines) {
+            const firstMeaning = await fetchAndDisplayFirstMeaning(word.trim());
+            const wordHtml = `
+              <p>
+                <strong>${word.trim()}</strong><br>First Meaning: ${firstMeaning}
+                <button class="deleteWordButton" data-word="${word.trim()}">Delete</button>
+              </p>
+            `;
+            document.getElementById("wordList").innerHTML += wordHtml;
+          }
+
+          // Add click event listeners to the "Delete" buttons
+          document.querySelectorAll(".deleteWordButton").forEach(button => {
+            button.addEventListener("click", (event) => {
+              const wordToDelete = event.currentTarget.dataset.word;
+              deleteWordFromFile(wordToDelete);
+            });
+          });
+        } catch (error) {
+          console.error("Error reading the text file:", error);
+        }
+      }
+
+      // Load and display words from the text file when the app is launched
+      fetchAndDisplayWordsFromTextFile();
+    });
+
+  </script>
+</body>
+</html>

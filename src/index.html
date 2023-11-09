@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Word Saver</title>
+  <style>
+    body {
+        font-family: 'Arial', sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f4f4f4;
+    }
+
+    .sidenav {
+        height: 100%;
+        width: 250px;
+        position: fixed;
+        z-index: 1;
+        top: 0;
+        left: 0;
+        background-color: #333;
+        padding-top: 20px;
+        padding-left: 10px;
+        color: white;
+    }
+
+    .sidenav h2 {
+        margin-bottom: 20px;
+    }
+
+    .sidenav ul {
+        list-style-type: none;
+        padding: 0;
+    }
+
+    .sidenav a {
+        text-decoration: none;
+        color: white;
+        font-size: 18px;
+        display: block;
+        margin-bottom: 15px;
+    }
+
+    .mainWrapper {
+        margin-left: 250px;
+        padding: 20px;
+    }
+
+    h1 {
+        color: #333;
+    }
+
+    section {
+        background-color: white;
+        padding: 20px;
+        border-radius: 5px;
+        margin-top: 20px;
+    }
+
+    input {
+        padding: 10px;
+        font-size: 16px;
+    }
+
+    button {
+        padding: 10px 20px;
+        font-size: 16px;
+        cursor: pointer;
+        background-color: #333;
+        color: white;
+        border: none;
+        border-radius: 5px;
+    }
+
+    button:hover {
+        background-color: #555;
+    }
+</style>
+  
+
+</head>
+<body>
+  <div class="sidenav">
+    <h2>Navigation</h2>
+    <ul>
+        
+        <li><a href="displayword.html"> Word Of the day</a></li>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="wordOfTheDay.html"> add Word of the Day</a></li>
+    </ul>
+</div>
+  <div class="mainWrapper">
+    <h1>My Thesa</h1>
+
+    <!-- Search for a Word Section -->
+    <section>
+      <h2>Search for a Word</h2>
+      <input id="wordInput" type="text" class="form-control">
+      <button id="searchButton" class="btn btn-default">Search</button>
+    </section>
+
+    <!-- Button to Go to "Add Word of the Day" Page -->
+    
+  </div>
+
+  <script src="fetchAPI.js"></script>
+  <script src="main.js"></script>
+</body>
+</html>
